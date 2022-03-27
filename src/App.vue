@@ -21,12 +21,14 @@
         <div class="col mb-3">
           <span v-if="errors.passwordMessage" class="error-message">{{ errors.passwordMessage }}</span>
         </div>
-        <div class="col mb-3">
-          <span v-if="responseMessage">{{ responseMessage }}</span>
-        </div>
         <div class="col">
           <button class="button-28" @click="handleClick">Sign up</button>
         </div>
+        <modal :show="popupActive" :message="this.responseMessage" @close="popupActive = false">
+          <template #body>
+            {{this.responseMessage}}
+          </template>
+        </modal>
       </div>
     </div>
   </div>
@@ -34,24 +36,30 @@
 
 <script>
 import axios from 'axios';
+import Modal from './components/ResponseModal.vue'
 
 export default {
   name: 'App',
-  components: {},
+  components: {
+    Modal
+  },
   methods: {
     clearForm: function () {
       this.usernameInput = '';
       this.passwordInput = '';
       this.passwordAgainInput = '';
-    }, handleClick: async function () {
+    },
+    handleClick: async function () {
       if (this.validatePassword() && this.validateUsername()) {
         let payload = {username: this.usernameInput, password: this.passwordInput};
         try {
           await axios.post("http://localhost:8081/api/v1/user", payload);
           this.clearForm();
           this.responseMessage = "User signed up"
+          this.popupActive = true;
         } catch (e) {
           this.responseMessage = e.response.data.message;
+          this.popupActive = true;
         }
       }
     },
@@ -90,6 +98,7 @@ export default {
       passwordInput: '',
       passwordAgainInput: '',
       responseMessage: '',
+      popupActive: false,
       errors: {
         usernameMessage: '',
         passwordMessage: ''
@@ -111,15 +120,6 @@ export default {
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-
 .container {
   max-width: 50%;
 }
@@ -134,10 +134,8 @@ export default {
   background-color: transparent;
   border: 2px solid #1A1A1A;
   border-radius: 15px;
-  /*box-sizing: border-box;*/
   color: #3B3B3B;
   cursor: pointer;
-  /*display: inline-block;*/
   font-family: Roobert, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 16px;
   font-weight: 600;
@@ -153,7 +151,6 @@ export default {
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  /*width: 100%;*/
   will-change: transform;
 }
 
